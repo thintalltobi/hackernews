@@ -5,7 +5,6 @@ import {
     OneToOne,
     OneToMany,
     JoinColumn,
-    Timestamp,
   } from 'typeorm';
 
   import { Users } from '../../user/entities/user.entity'
@@ -19,34 +18,36 @@ import {
     @Column({ unique: true })
     external_id: number;
 
-    @Column()
+    @Column({nullable: true})
     title: string;
 
-    @Column()
+    @Column("text", {nullable: true})
     text: string;
 
-    @Column()
+    @Column({nullable: true})
     score: number;
 
-    @Column()
+    @Column({nullable: true})
     descendant_count: number;
 
-    @Column()
+    @Column({nullable: true})
     dead: boolean;
     
     @Column()
-    created_by_id: number;
+    createdById: number;
 
-    @Column()
+    @Column({nullable: true})
     created_at: Date;
 
-    @Column()
+    @Column({nullable: true})
     deleted_at: Date;
 
-    // @OneToOne(() => Users)
-    // @JoinColumn()
-    // created_by: Users 
+    @OneToOne(() => Users, {
+      eager: true,
+    })
+    @JoinColumn()
+    createdBy: Users 
 
-    @OneToMany(() => Comments, (Comment) => Comment.entity_id)
-    comment: Comment[]
+    @OneToMany(() => Comments, (comment) => comment.entityId)
+    comment: Comments[]
   }

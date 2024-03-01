@@ -40,9 +40,9 @@ export class CommentDto {
     deleted_at: Date;
     created_at: Date;
     parent_comment_id: number;
-    entity_id: number;
+    entityId: number;
     kids?: number[];
-    created_by_id: number;
+    createdById: number;
   }
 
   export class UserDto {

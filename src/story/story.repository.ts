@@ -3,7 +3,6 @@
     import { CreateStoryDto } from './dto/create-story.dto';
     import { UpdateStoryDto } from './dto/update-story.dto';
     import { Stories } from '../story/entities/story.entity'
-    import { DataSource } from "typeorm"
     import { InjectRepository } from '@nestjs/typeorm';
     import { Repository } from 'typeorm';
 
@@ -16,12 +15,7 @@
         ) {}
 
       async create(createStoryDto: CreateStoryDto) {
-        console.log(createStoryDto);
-        
-        // const userData = await this.storyRepository.create({
-        //     ...createStoryDto
-        // })
-       // await this.storyRepository.save(userData)
+    
        return true
       }
     

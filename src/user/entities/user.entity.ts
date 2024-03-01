@@ -1,28 +1,28 @@
-import { Entity, PrimaryGeneratedColumn, Column, Timestamp } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
 export class Users {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({nullable: true})
   name: string;
 
-  @Column()
+  @Column({nullable: true})
   karma: number;
 
-  @Column()
+  @Column("text",{nullable: true})
   about: string;
 
-  @Column()
+  @Column({nullable: true})
   deleted: boolean;
 
-  @Column()
+  @Column({nullable: true})
   dead: boolean;
 
-  @Column()
+  @Column({nullable: true})
   created_at: Date;
 
-  @Column()
+  @Column({nullable: true})
   deleted_at: Date;
 }

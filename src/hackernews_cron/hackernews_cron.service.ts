@@ -1,19 +1,17 @@
-import { HttpException, Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   CommentDto,
   EntityDto,
   EntityType,
-  StoryDto,
   UserDto,
 } from './dto/create-hackernews_cron.dto';
 import { Stories } from '../story/entities/story.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Timestamp } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
-import { AxiosError, AxiosResponse } from 'axios';
-import { Observable, catchError, firstValueFrom, map } from 'rxjs';
+import { AxiosError } from 'axios';
+import { catchError, firstValueFrom, map } from 'rxjs';
 import { Users } from 'src/user/entities/user.entity';
-import { CreateStoryDto } from 'src/story/dto/create-story.dto';
 import { Comments } from 'src/comment/entities/comment.entity';
 import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -30,20 +28,16 @@ export class HackernewsCronService {
     @InjectRepository(Stories)
     private readonly storyRepository: Repository<Stories>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private dataSource: DataSource,
   ) {}
-
-  // async findAll(): Promise<number> {
-  //   return await this.saveAndGetAuthorIdByName('jl');
-  // }
 
   async fetchStories() {
     //get the id of the maximum entity which would be the
-    const maxEntityId = await this.getMaxEntityId(); //100
-    let lastMaxEntityId = maxEntityId;
-    console.log(lastMaxEntityId);
-
+    const currentMaxEntityId = await this.getMaxEntityId(); //100
+    let lastMaxEntityId = currentMaxEntityId;
     let numberOfStoriesRan = 0;
 
+    // keep running until the no of stories reaches 100
     while (numberOfStoriesRan <= 99) {
       const entityId = lastMaxEntityId - 1;
 
@@ -52,66 +46,47 @@ export class HackernewsCronService {
 
       // only save when the entity type is story
       if (eachEntity.type == EntityType.story) {
-
         // save the story data
-        let savedStory = await this.saveStoryEntity(eachEntity);
-
-        // save all the comments and comments authors
-        await this.fetchData(eachEntity,[], eachEntity.id);
+        await this.saveStoryAndItsEntities(eachEntity);
 
         numberOfStoriesRan++;
-        lastMaxEntityId = savedStory.external_id;
+        lastMaxEntityId = eachEntity.id;
       }
       lastMaxEntityId = entityId;
-      console.log(numberOfStoriesRan, entityId, lastMaxEntityId);
     }
+    await this.cacheManager.set('lastEntityValue', lastMaxEntityId.toString());
   }
 
-  async checkIfParentIsAStory(comment_id: number){
-    // fetch the comments entity
-    const comment = await this.getEntityById(comment_id);
-
-    if(!comment){
-      return false
-    }
-    // fetch the entity parent and check if the type is a story
-    const entity = await this.getEntityById(comment.parent);
-
-    if(entity.type == EntityType.story){
-      return true
-    }
-
-  }
-
-  async fetchData(entity: EntityDto, comment_ids: number[], story_id: number) {
-    let newCommentIds = comment_ids
-
-    if (entity.kids && entity.kids.length > 0) {
-      entity.kids.forEach(async (kidId) => {
-        const kidEntity = await this.getEntityById(kidId);
-        let deleted = kidEntity.deleted ? new Date() : null;
+  async saveComments(
+    commentIds: number[],
+    storyId: number,
+    isFirstLevelComment = false,
+  ) {
+    if (commentIds && commentIds.length > 0) {
+      commentIds.forEach(async (commentId) => {
+        const commentEntity = await this.getEntityById(commentId);
+        let deleted = commentEntity.deleted ? new Date() : null;
 
         let createCommentData: CommentDto = {
-          external_id: kidEntity.id,
-          text: kidEntity.text,
-          score: kidEntity.score,
-          dead: kidEntity.dead,
+          external_id: commentEntity.id,
+          text: commentEntity.text,
+          score: commentEntity.score,
+          dead: commentEntity.dead,
           deleted_at: deleted,
           created_at: new Date(),
-          parent_comment_id: await this.checkIfParentIsAStory(kidEntity.id) ? null :  kidEntity.parent,
-          entity_id: story_id, 
-          created_by_id: await this.saveAndGetAuthorIdByName(kidEntity.by),
+          parent_comment_id: isFirstLevelComment ? null : commentEntity.parent,
+          entityId: storyId,
+          createdById: await this.saveAndGetAuthorIdByName(commentEntity.by),
         };
 
-        const commentData =
-          await this.commentRepository.save(createCommentData);
-          comment_ids.push(commentData.external_id)
-        this.fetchData(kidEntity,newCommentIds,story_id);
+        await this.commentRepository.save(createCommentData);
+        await this.saveComments(commentEntity.kids, storyId);
       });
     }
-    return comment_ids;
+
+    return;
   }
-  
+
   async saveAndGetAuthorIdByName(name: string) {
     const checkIfAuthorExists = await this.userRepository.findOneBy({ name });
 
@@ -146,63 +121,62 @@ export class HackernewsCronService {
     return savedAuthor.id;
   }
 
-  async saveStoryEntity(eachEntity: EntityDto): Promise<any> {
-    // const queryRunner = this.dataSource.createQueryRunner();
-    // await queryRunner.connect();
-    // await queryRunner.startTransaction();
-
-    let createStoryData = {
-      external_id: eachEntity.id,
-      title: eachEntity.title,
-      text: eachEntity.text,
-      score: eachEntity.score,
-      dead: eachEntity.dead,
-      deleted_at: eachEntity.deleted ? new Date() : null,
-      created_at: new Date(),
-      descendant_count: eachEntity.descendants,
-      kids: eachEntity.kids,
-      createdById: await this.saveAndGetAuthorIdByName(eachEntity.by),
-    };
-    const storyData = await this.storyRepository.save(createStoryData);
+  async saveStoryAndItsEntities(eachEntity: EntityDto): Promise<any> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     try {
-      // await queryRunner.commitTransaction();
+      let createStoryData = {
+        external_id: eachEntity.id,
+        title: eachEntity.title,
+        text: eachEntity.text,
+        score: eachEntity.score,
+        dead: eachEntity.dead,
+        deleted_at: eachEntity.deleted ? new Date() : null,
+        created_at: new Date(),
+        descendant_count: eachEntity.descendants,
+        createdById: await this.saveAndGetAuthorIdByName(eachEntity.by),
+      };
+      console.log(eachEntity, createStoryData);
+
+      let savedStory = await this.storyRepository.save(createStoryData);
+      await this.saveComments(eachEntity.kids, savedStory.id, true);
+
+      await queryRunner.commitTransaction();
     } catch (err) {
       // since we have errors lets rollback the changes we made
-      // await queryRunner.rollbackTransaction();
+      await queryRunner.rollbackTransaction();
     } finally {
       // you need to release a queryRunner which was manually instantiated
-      //  await queryRunner.release();
+      await queryRunner.release();
     }
 
-    console.log('saved a story');
-
-    return storyData;
+    return true;
   }
 
   async getMaxEntityId(): Promise<number> {
     const maxEntityValue =
       await this.cacheManager.get<string>('lastEntityValue');
 
-    if (!maxEntityValue) {
-      const { data } = await firstValueFrom(
-        this.httpService
-          .get<number>(
-            'https://hacker-news.firebaseio.com/v0/maxitem.json?print=pretty',
-          )
-          .pipe(
-            catchError((error: AxiosError) => {
-              //this.logger.error(error.response.data);
-              throw 'An error happened!';
-            }),
-          ),
-      );
-
-      await this.cacheManager.set('lastEntityValue', data.toString());
+    if (maxEntityValue) {
+      return Number(maxEntityValue);
     }
-
-    return Number(maxEntityValue);
+    const { data } = await firstValueFrom(
+      this.httpService
+        .get<number>(
+          'https://hacker-news.firebaseio.com/v0/maxitem.json?print=pretty',
+        )
+        .pipe(
+          catchError((error: AxiosError) => {
+            throw 'Unable to fetch Max Entity!';
+          }),
+        ),
+    );
+    await this.cacheManager.set('lastEntityValue', data.toString());
+    return data
   }
+  
   async getEntityById(entity_id: number): Promise<EntityDto> {
     const { data } = await firstValueFrom(
       this.httpService
@@ -211,8 +185,7 @@ export class HackernewsCronService {
         )
         .pipe(
           catchError((error: AxiosError) => {
-            //this.logger.error(error.response.data);
-            throw 'An error happened!';
+            throw 'Unable to fetch Entity Data, kindly reach out to the administratiors';
           }),
         ),
     );

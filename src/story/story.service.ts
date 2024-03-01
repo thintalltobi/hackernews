@@ -4,10 +4,6 @@ import { UpdateStoryDto } from './dto/update-story.dto';
 import { Stories } from '../story/entities/story.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Cron } from '@nestjs/schedule';
-import { HttpService } from '@nestjs/axios';
-import { AxiosError, AxiosResponse } from 'axios';
-import { Observable, catchError, firstValueFrom, map } from 'rxjs';
 
 @Injectable()
 export class StoryService {

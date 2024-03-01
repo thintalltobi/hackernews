@@ -3,22 +3,18 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StoryModule } from './story/story.module';
-import { JobModule } from './job/job.module';
-import { PollModule } from './poll/poll.module';
-import { PollOptModule } from './poll_opt/poll_opt.module';
 import { CommentModule } from './comment/comment.module';
 import { UserModule } from './user/user.module';
 import { Users } from './user/entities/user.entity'
 import { Comments } from './comment/entities/comment.entity'
 import { Stories } from './story/entities/story.entity'
-import { PollOpt } from './poll_opt/entities/poll_opt.entity'
-import { Poll } from './poll/entities/poll.entity'
 import { ScheduleModule } from '@nestjs/schedule';
 import { HackernewsCronModule } from './hackernews_cron/hackernews_cron.module';
 import { BullModule } from '@nestjs/bull';
 import { HttpModule } from '@nestjs/axios';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
+import { dataSourceOptions } from "./db/ormconfig";
 
 @Module({
   imports: [
@@ -31,6 +27,7 @@ import * as redisStore from 'cache-manager-redis-store';
       }),
     }),
     ScheduleModule.forRoot(),
+    TypeOrmModule.forRoot(dataSourceOptions),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DATABASE_HOST,
@@ -38,7 +35,10 @@ import * as redisStore from 'cache-manager-redis-store';
       password: '',
       username: 'root',
       database: 'hacker-news',
-      entities: [Users,Comments,Stories,Poll,PollOpt],
+      entities: [Users,Comments,Stories],
+      migrations: [
+        "src/db/migrations/*.ts"
+      ],
       synchronize: false,
       logging: true,
     }),
@@ -51,9 +51,6 @@ import * as redisStore from 'cache-manager-redis-store';
     HttpModule,
     TypeOrmModule.forFeature([Stories]),
     StoryModule,
-    JobModule,
-    PollModule,
-    PollOptModule,
     CommentModule,
     UserModule,
     HackernewsCronModule,

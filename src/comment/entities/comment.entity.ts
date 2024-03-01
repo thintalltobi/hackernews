@@ -2,15 +2,12 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  Timestamp,
   OneToOne,
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
 import { Users } from '../../user/entities/user.entity';
 import { Stories } from '../../story/entities/story.entity';
-import { Poll } from '../../poll/entities/poll.entity';
-import { EntityType } from 'src/hackernews_cron/dto/create-hackernews_cron.dto';
 
 @Entity()
 export class Comments {
@@ -20,31 +17,34 @@ export class Comments {
   @Column({ unique: true })
   external_id: number;
 
-  @Column()
+  @Column("text",{nullable: true})
   text: string;
 
-  @Column()
+  @Column({nullable: true})
   parent_comment_id: number;
 
-  @Column()
-  entity_id: number;
+  @Column({nullable: true})
+  entityId: number;
 
-  @Column()
-  created_by_id: number;
+  @Column({nullable: true})
+  createdById: number;
 
-  @Column()
+  @Column({nullable: true})
   created_at: Date;
 
-  @Column()
+  @Column({nullable: true})
   deleted_at: Date;
 
-//   @OneToOne(() => Users)
-//   @JoinColumn()
-//   created2_by: Users;
+  @OneToOne(() => Users, {
+    eager: true,
+  })
+  @JoinColumn()
+  createdBy: Users;
 
-  // @ManyToOne(() => Stories, (stories) => stories.comment)
-  // stories: Stories[]
+  @JoinColumn()
+  @ManyToOne(() => Stories, (stories) => stories.comment, {
+    eager: true
+  })
+  entity: Stories[]
 
-  // @ManyToOne(() => Poll, (polls) => polls.comment)
-  // polls: Poll[]
 }
