@@ -36,9 +36,7 @@ import { dataSourceOptions } from './db/ormconfig';
       username: 'root',
       database: 'hacker-news',
       entities: [Authors, Comments, Stories],
-      migrations: ['src/db/migrations/*.ts'],
       synchronize: false,
-      logging: true,
     }),
     CacheModule.register({
       isGlobal: true,

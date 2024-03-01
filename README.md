@@ -69,8 +69,8 @@ Below are the high level implementations:
 This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
 
 * [![Nest][Nest.js]][Next-url]
-* [![MySQL][MySQL]][React-url]
-* [![Redis][Redis]][Vue-url]
+* [![MySQL][MySQL]][Mysql-url]
+* [![Redis][Redis]][Redis-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -105,8 +105,10 @@ _Below is an example of how you can instruct your audience on installing and set
    ```sh
    npm install
    ```
-3. Run database Migration and update the ormconfig file in the db folder
+3. Create DB, Run database Migration and update the ormconfig file in the db folder
    ```sh
+   You need to create the database 'hacker-news' 
+
    npm run migration:generate ./src/db/migrations/nameofmigration
    npm run typeorm migration:run  
 
@@ -117,7 +119,11 @@ _Below is an example of how you can instruct your audience on installing and set
 
    use redis-server to start the redis server
    ```
-5. Start the app
+5. Copy env example file and set params
+
+    cp .env.example .env
+    
+6. Start the app
    ```js
    npm run start
    ```
@@ -152,17 +158,5 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 [product-screenshot]: images/screenshot.png
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/
-[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[React-url]: https://reactjs.org/
-[Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
-[Vue-url]: https://vuejs.org/
-[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
-[Angular-url]: https://angular.io/
-[Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
-[Svelte-url]: https://svelte.dev/
-[Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
-[Laravel-url]: https://laravel.com
-[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
-[Bootstrap-url]: https://getbootstrap.com
-[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 
+[Mysql-url]: https://www.mysql.com/
+[Redis-url]: https://redis.io/docs/get-started/

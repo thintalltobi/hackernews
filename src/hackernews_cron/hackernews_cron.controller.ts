@@ -13,7 +13,7 @@ export class HackernewsCronController {
   ) {}
   
   async initJob() {
-    await this.entityQueue.add({}, { repeat: { cron: '5 * * * * *' } });
+    await this.entityQueue.add({}, { repeat: { cron: '0 */12 * * * ' } });
     console.log('hii from queue');
   }
   onModuleInit(){
