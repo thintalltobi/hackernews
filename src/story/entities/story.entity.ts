@@ -1,53 +1,53 @@
 import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    OneToOne,
-    OneToMany,
-    JoinColumn,
-  } from 'typeorm';
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 
-  import { Users } from '../../user/entities/user.entity'
-  import { Comments } from '../../comment/entities/comment.entity'
+import { Authors } from '../../author/entities/author.entity';
+import { Comments } from '../../comment/entities/comment.entity';
 
-  @Entity()
-  export class Stories {
-    @PrimaryGeneratedColumn()
-    id: number;
-  
-    @Column({ unique: true })
-    external_id: number;
+@Entity()
+export class Stories {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({nullable: true})
-    title: string;
+  @Column({ unique: true })
+  external_id: number;
 
-    @Column("text", {nullable: true})
-    text: string;
+  @Column({ nullable: true })
+  title: string;
 
-    @Column({nullable: true})
-    score: number;
+  @Column('text', { nullable: true })
+  text: string;
 
-    @Column({nullable: true})
-    descendant_count: number;
+  @Column({ nullable: true })
+  score: number;
 
-    @Column({nullable: true})
-    dead: boolean;
-    
-    @Column()
-    createdById: number;
+  @Column({ nullable: true })
+  descendant_count: number;
 
-    @Column({nullable: true})
-    created_at: Date;
+  @Column({ nullable: true })
+  dead: boolean;
 
-    @Column({nullable: true})
-    deleted_at: Date;
+  @Column()
+  createdById: number;
 
-    @OneToOne(() => Users, {
-      eager: true,
-    })
-    @JoinColumn()
-    createdBy: Users 
+  @Column({ nullable: true })
+  created_at: Date;
 
-    @OneToMany(() => Comments, (comment) => comment.entityId)
-    comment: Comments[]
-  }
+  @Column({ nullable: true })
+  deleted_at: Date;
+
+  @OneToOne(() => Authors, {
+    eager: true,
+  })
+  @JoinColumn()
+  createdBy: Authors;
+
+  @OneToMany(() => Comments, (comment) => comment.entityId)
+  comment: Comments[];
+}

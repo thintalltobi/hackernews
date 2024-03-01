@@ -6,7 +6,7 @@ import {
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
-import { Users } from '../../user/entities/user.entity';
+import { Authors } from '../../author/entities/author.entity';
 import { Stories } from '../../story/entities/story.entity';
 
 @Entity()
@@ -17,34 +17,33 @@ export class Comments {
   @Column({ unique: true })
   external_id: number;
 
-  @Column("text",{nullable: true})
+  @Column('text', { nullable: true })
   text: string;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   parent_comment_id: number;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   entityId: number;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   createdById: number;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   created_at: Date;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   deleted_at: Date;
 
-  @OneToOne(() => Users, {
+  @OneToOne(() => Authors, {
     eager: true,
   })
   @JoinColumn()
-  createdBy: Users;
+  createdBy: Authors;
 
   @JoinColumn()
   @ManyToOne(() => Stories, (stories) => stories.comment, {
-    eager: true
+    eager: true,
   })
-  entity: Stories[]
-
+  entity: Stories[];
 }

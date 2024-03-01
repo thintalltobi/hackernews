@@ -4,17 +4,17 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StoryModule } from './story/story.module';
 import { CommentModule } from './comment/comment.module';
-import { UserModule } from './user/user.module';
-import { Users } from './user/entities/user.entity'
-import { Comments } from './comment/entities/comment.entity'
-import { Stories } from './story/entities/story.entity'
+import { AuthorModule } from './author/author.module';
+import { Authors } from './author/entities/author.entity';
+import { Comments } from './comment/entities/comment.entity';
+import { Stories } from './story/entities/story.entity';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HackernewsCronModule } from './hackernews_cron/hackernews_cron.module';
 import { BullModule } from '@nestjs/bull';
 import { HttpModule } from '@nestjs/axios';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
-import { dataSourceOptions } from "./db/ormconfig";
+import { dataSourceOptions } from './db/ormconfig';
 
 @Module({
   imports: [
@@ -35,10 +35,8 @@ import { dataSourceOptions } from "./db/ormconfig";
       password: '',
       username: 'root',
       database: 'hacker-news',
-      entities: [Users,Comments,Stories],
-      migrations: [
-        "src/db/migrations/*.ts"
-      ],
+      entities: [Authors, Comments, Stories],
+      migrations: ['src/db/migrations/*.ts'],
       synchronize: false,
       logging: true,
     }),
@@ -52,11 +50,10 @@ import { dataSourceOptions } from "./db/ormconfig";
     TypeOrmModule.forFeature([Stories]),
     StoryModule,
     CommentModule,
-    UserModule,
+    AuthorModule,
     HackernewsCronModule,
   ],
   controllers: [AppController],
   providers: [AppService],
-  
 })
 export class AppModule {}

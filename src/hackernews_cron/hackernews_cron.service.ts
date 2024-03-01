@@ -11,7 +11,7 @@ import { DataSource, Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
 import { catchError, firstValueFrom, map } from 'rxjs';
-import { Users } from 'src/user/entities/user.entity';
+import { Authors } from 'src/author/entities/author.entity';
 import { Comments } from 'src/comment/entities/comment.entity';
 import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -20,8 +20,8 @@ CacheModule.register({ isGlobal: true });
 @Injectable()
 export class HackernewsCronService {
   constructor(
-    @InjectRepository(Users)
-    private readonly userRepository: Repository<Users>,
+    @InjectRepository(Authors)
+    private readonly userRepository: Repository<Authors>,
     private readonly httpService: HttpService,
     @InjectRepository(Comments)
     private readonly commentRepository: Repository<Comments>,
@@ -174,9 +174,9 @@ export class HackernewsCronService {
         ),
     );
     await this.cacheManager.set('lastEntityValue', data.toString());
-    return data
+    return data;
   }
-  
+
   async getEntityById(entity_id: number): Promise<EntityDto> {
     const { data } = await firstValueFrom(
       this.httpService
