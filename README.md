@@ -79,19 +79,6 @@ This section should list any major frameworks/libraries used to bootstrap your p
 <!-- GETTING STARTED -->
 ## Getting Started
 
-Kindly clone the project locally to get started.
-
-### Prerequisites
-
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
-* redis
-  ```sh
-  link to redis
-  ```
 
 ### Installation
 
@@ -122,7 +109,7 @@ _Below is an example of how you can instruct your audience on installing and set
 5. Copy env example file and set params
 
     cp .env.example .env
-    
+
 6. Start the app
    ```js
    npm run start
